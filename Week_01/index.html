@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>井字棋</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #app {
+            width: 300px;
+            margin: 100px;
+        }
+        .cell {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            line-height: 100px;
+            font-size: 45px;
+            background: #36ff72;
+            border: 1px solid #000;
+            margin: 0;
+            box-sizing: border-box;
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+
+    </div>
+</body>
+<script>
+    let list = [
+        [0,0,0],
+        [0,0,0],
+        [0,0,0]
+    ];
+    function show() {
+        let htmlStr = "";
+        for(let i = 0; i < 3; i++) {
+            for( let j = 0; j < 3; j++) {
+                let point = list[i][j];
+                htmlStr += `<div class='cell' onClick = addPoint(${i},${j})>`;
+                htmlStr += point == 1 ? "✔" : point == 2 ? "X" : "";
+                htmlStr += "</div>";
+            }
+        }
+        let app = document.getElementById("app");
+        app.innerHTML = htmlStr;
+    }
+
+    let nextPoint = 1;
+    function addPoint(y, x) {
+        if(list[y][x] != 0) {
+            return;
+        }
+        list[y][x] = nextPoint;
+        if(check(list)) {
+            let text = nextPoint == 1 ? '✔' : 'X';
+            text += ' is winner!'
+            show();
+            alert(text);
+            return;
+        }
+        nextPoint = nextPoint == 1 ? 2 : 1;
+        show();
+        let willFlag = willWin(list, nextPoint);
+        console.log(willFlag);
+        if(willFlag) {
+            let text = nextPoint == 1 ? '✔' : 'X';
+            text += ' will win!'
+            console.log(text);
+        }
+        if(nextPoint == 2) {
+            let point = bestChoise(list,nextPoint).point;
+            if(point) {
+                addPoint(point[0],point[1]);
+            }
+        }
+        console.log(bestChoise(list,nextPoint))
+    }
+
+    function check(parten) {
+        //行
+        if(parten[0][0] && parten[0][0] == parten[0][1] && parten[0][1] == parten[0][2]) return true;
+        if(parten[1][0] && parten[1][0] == parten[1][1] && parten[1][1] == parten[1][2]) return true;
+        if(parten[2][0] && parten[2][0] == parten[2][1] && parten[2][1] == parten[2][2]) return true;
+        //列
+        if(parten[0][0] && parten[0][0] == parten[1][0] && parten[1][0] == parten[2][0]) return true;
+        if(parten[0][1] && parten[0][1] == parten[1][1] && parten[1][1] == parten[2][1]) return true;
+        if(parten[0][2] && parten[0][2] == parten[1][2] && parten[1][2] == parten[2][2]) return true;
+        //斜线
+        if(parten[1][1] && parten[0][0] == parten[1][1] && parten[1][1] == parten[2][2]) return true;
+        if(parten[1][1] && parten[2][0] == parten[1][1] && parten[1][1] == parten[0][2]) return true;
+
+        return false;
+    }
+
+    function willWin(parten, pointNum) {
+        for(let y = 0; y < 3; y++) {
+            for(let x = 0; x < 3; x++) {
+                if(parten[y][x]) continue;
+                let tempParten = JSON.parse(JSON.stringify(parten));
+                tempParten[y][x] = pointNum;
+                if(check(tempParten)) return [y, x];
+            }
+        }
+        return false;
+    }
+
+    function bestChoise (parten, pointNum) {
+        let p;
+        if( p = willWin(parten, pointNum)) {
+            return {
+                point: p,
+                result: 1
+            }
+        }
+        let result = -2;
+        let point = null;
+        for(let i = 0 ;i < 3; i++) {
+            for(let j = 0 ;j < 3; j++) {
+                if(parten[i][j]) continue;
+                let temp = JSON.parse(JSON.stringify(parten));
+                temp[i][j] = pointNum;
+                let r = bestChoise(temp, 3-pointNum).result;
+                if(-r > result) {
+                    result = -r;
+                    point = [i, j];
+                }
+            }
+        }
+
+        return {
+            point: point,
+            result: point ? result : 0
+        }
+    }
+    show();
+</script>
+
+</html>
